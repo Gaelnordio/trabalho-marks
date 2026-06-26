@@ -1,184 +1,395 @@
 import pywhatkit
 
-pacientes = []
-consultas = []
 
-def cadastrar_paciente():
+# =========================
+# CLASSE PESSOA
+# =========================
 
-    id_paciente = len(pacientes) + 1
+class Pessoa:
 
-    nome = input("Nome: ")
-    idade = input("Idade: ")
-    telefone = input("WhatsApp (+5511999999999): ")
-    endereco = input("Endereço: ")
+    def __init__(self, nome, idade, telefone):
+        self.__nome = nome
+        self.__idade = idade
+        self.__telefone = telefone
 
-    paciente = {
-        "id": id_paciente,
-        "nome": nome,
-        "idade": idade,
-        "telefone": telefone,
-        "endereco": endereco
-    }
+    @property
+    def nome(self):
+        return self.__nome
 
-    pacientes.append(paciente)
+    @property
+    def idade(self):
+        return self.__idade
 
-    print("\nPaciente cadastrado com sucesso!")
-    print("ID:", id_paciente)
+    @property
+    def telefone(self):
+        return self.__telefone
+
+    @nome.setter
+    def nome(self, valor):
+        self.__nome = valor
+
+    @idade.setter
+    def idade(self, valor):
+        self.__idade = valor
+
+    @telefone.setter
+    def telefone(self, valor):
+        self.__telefone = valor
+
+    def exibir_dados(self):
+        print("Nome:", self.nome)
+        print("Idade:", self.idade)
+        print("Telefone:", self.telefone)
 
 
-def area_paciente():
+# =========================
+# PACIENTE
+# (HERANÇA + POLIMORFISMO)
+# =========================
 
-    telefone = input("Digite seu WhatsApp: ")
+class Paciente(Pessoa):
 
-    for p in pacientes:
+    def __init__(self, id, nome, idade, telefone, endereco):
+        super().__init__(nome, idade, telefone)
 
-        if p["telefone"] == telefone:
+        self.__id = id
+        self.__endereco = endereco
 
-            print("\n===== DADOS DO PACIENTE =====")
-            print("ID:", p["id"])
-            print("Nome:", p["nome"])
-            print("Idade:", p["idade"])
-            print("Telefone:", p["telefone"])
-            print("Endereço:", p["endereco"])
+    @property
+    def id(self):
+        return self.__id
 
-            print("\n===== CONSULTAS =====")
+    @property
+    def endereco(self):
+        return self.__endereco
 
-            encontrou = False
+    @endereco.setter
+    def endereco(self, valor):
+        self.__endereco = valor
 
-            for c in consultas:
+    # POLIMORFISMO (OVERRIDING)
 
-                if c["id_paciente"] == p["id"]:
+    def exibir_dados(self):
 
-                    print("\nData:", c["data"])
-                    print("Horário:", c["horario"])
-                    print("Motivo:", c["motivo"])
+        print("\n===== PACIENTE =====")
+        print("ID:", self.id)
 
-                    encontrou = True
+        super().exibir_dados()
 
-            if not encontrou:
-                print("Nenhuma consulta agendada.")
+        print("Endereço:", self.endereco)
+
+
+# =========================
+# CONSULTA
+# =========================
+
+class Consulta:
+
+    def __init__(self, paciente, data, horario, motivo):
+
+        self.__paciente = paciente
+        self.__data = data
+        self.__horario = horario
+        self.__motivo = motivo
+        self.__status = "A confirmar"
+
+    @property
+    def paciente(self):
+        return self.__paciente
+
+    @property
+    def data(self):
+        return self.__data
+
+    @property
+    def horario(self):
+        return self.__horario
+
+    @property
+    def motivo(self):
+        return self.__motivo
+
+    @property
+    def status(self):
+        return self.__status
+
+    def confirmar(self):
+        self.__status = "Confirmada"
+
+    def cancelar(self):
+        self.__status = "Cancelada"
+
+    def exibir(self):
+
+        print("\nPaciente:", self.paciente.nome)
+        print("Data:", self.data)
+        print("Horário:", self.horario)
+        print("Motivo:", self.motivo)
+        print("Status:", self.status)
+
+
+# =========================
+# SISTEMA
+# =========================
+
+class SistemaPosto:
+
+    def __init__(self):
+
+        self.__pacientes = []
+        self.__consultas = []
+
+    # ---------------------
+
+    def cadastrar_paciente(self):
+
+        nome = input("Nome: ")
+        idade = input("Idade: ")
+        telefone = input("WhatsApp (+5511999999999): ")
+        endereco = input("Endereço: ")
+
+        paciente = Paciente(
+
+            len(self.__pacientes) + 1,
+
+            nome,
+
+            idade,
+
+            telefone,
+
+            endereco
+
+        )
+
+        self.__pacientes.append(paciente)
+
+        print("\nPaciente cadastrado com sucesso!")
+
+    # ---------------------
+
+    def procurar_paciente(self, id):
+
+        for paciente in self.__pacientes:
+
+            if paciente.id == id:
+                return paciente
+
+        return None
+
+    # ---------------------
+
+    def listar_pacientes(self):
+
+        if len(self.__pacientes) == 0:
+
+            print("Nenhum paciente cadastrado.")
+            return
+
+        print("\n===== PACIENTES =====")
+
+        for paciente in self.__pacientes:
+
+            paciente.exibir_dados()
+
+    # ---------------------
+
+    def area_paciente(self):
+
+        telefone = input("Digite seu WhatsApp: ")
+
+        for paciente in self.__pacientes:
+
+            if paciente.telefone == telefone:
+
+                paciente.exibir_dados()
+
+                print("\n===== CONSULTAS =====")
+
+                encontrou = False
+
+                for consulta in self.__consultas:
+
+                    if consulta.paciente.id == paciente.id:
+
+                        consulta.exibir()
+
+                        encontrou = True
+
+                if not encontrou:
+
+                    print("Nenhuma consulta encontrada.")
+
+                return
+
+        print("Telefone não encontrado.")
+
+    # ---------------------
+
+    def agendar_consulta(self):
+
+        try:
+
+            id_paciente = int(input("ID do paciente: "))
+
+        except:
+
+            print("ID inválido.")
 
             return
 
-    print("Telefone não encontrado.")
+        paciente = self.procurar_paciente(id_paciente)
 
+        if paciente is None:
 
-def listar_pacientes():
+            print("Paciente não encontrado.")
 
-    if len(pacientes) == 0:
-        print("Nenhum paciente cadastrado.")
-        return
+            return
 
-    print("\n===== PACIENTES =====")
+        data = input("Data(dd/mm/aaaa): ")
+        horario = input("Horário(hh:mm): ")
+        motivo = input("Motivo: ")
 
-    for p in pacientes:
+        consulta = Consulta(
 
-        print("\nID:", p["id"])
-        print("Nome:", p["nome"])
-        print("Telefone:", p["telefone"])
+            paciente,
 
+            data,
 
-def agendar_consulta():
+            horario,
 
-    try:
-        id_paciente = int(input("ID do paciente: "))
-    except:
-        print("ID inválido.")
-        return
+            motivo
 
-    paciente = None
+        )
 
-    for p in pacientes:
+        self.__consultas.append(consulta)
 
-        if p["id"] == id_paciente:
-            paciente = p
-            break
+        print("Consulta cadastrada.")
 
-    if paciente is None:
-        print("Paciente não encontrado.")
-        return
+    # ---------------------
 
-    data = input("Data (dd/mm/aaaa): ")
-    horario = input("Horário (hh:mm): ")
-    motivo = input("Motivo da consulta: ")
+    def listar_consultas(self):
 
-    consultas.append({
-        "id_paciente": paciente["id"],
-        "nome": paciente["nome"],
-        "telefone": paciente["telefone"],
-        "data": data,
-        "horario": horario,
-        "motivo": motivo
-    })
+        if len(self.__consultas) == 0:
 
-    print("Consulta agendada com sucesso!")
+            print("Nenhuma consulta cadastrada.")
+            return
 
+        print("\n===== CONSULTAS =====")
 
-def listar_consultas():
+        for consulta in self.__consultas:
 
-    if len(consultas) == 0:
-        print("Nenhuma consulta cadastrada.")
-        return
+            consulta.exibir()
 
-    print("\n===== CONSULTAS =====")
+    # ---------------------
 
-    for c in consultas:
+    def confirmar_consulta(self):
 
-        print("\nPaciente:", c["nome"])
-        print("Data:", c["data"])
-        print("Horário:", c["horario"])
-        print("Motivo:", c["motivo"])
+        try:
+            id_paciente = int(input("ID do paciente: "))
+        except:
+            print("ID inválido.")
+            return
 
+        for consulta in self.__consultas:
 
-def enviar_lembrete():
+            if consulta.paciente.id == id_paciente:
 
-    try:
-        id_paciente = int(input("ID do paciente: "))
-    except:
-        print("ID inválido.")
-        return
+                consulta.confirmar()
 
-    for c in consultas:
+                print("Consulta confirmada!")
 
-        if c["id_paciente"] == id_paciente:
+                return
 
-            mensagem = (
-                f"Olá {c['nome']}!\n\n"
-                f"Lembramos que sua consulta está marcada para:\n"
-                f"Data: {c['data']}\n"
-                f"Horário: {c['horario']}\n"
-                f"Motivo da consulta: {c['motivo']}\n\n"
-                f"Posto de Saúde do Bairro."
-            )
+        print("Consulta não encontrada.")
 
-            try:
+    # ---------------------
 
-                pywhatkit.sendwhatmsg_instantly(
-                    c["telefone"],
-                    mensagem,
-                    wait_time=15,
-                    tab_close=True
-                    
+    def cancelar_consulta(self):
+
+        try:
+            id_paciente = int(input("ID do paciente: "))
+        except:
+            print("ID inválido.")
+            return
+
+        for consulta in self.__consultas:
+
+            if consulta.paciente.id == id_paciente:
+
+                consulta.cancelar()
+
+                print("Consulta cancelada!")
+
+                return
+
+        print("Consulta não encontrada.")
+
+    # ---------------------
+
+    def enviar_lembrete(self):
+
+        try:
+            id_paciente = int(input("ID do paciente: "))
+        except:
+            print("ID inválido.")
+            return
+
+        for consulta in self.__consultas:
+
+            if consulta.paciente.id == id_paciente:
+
+                mensagem = (
+                    f"Olá {consulta.paciente.nome}!\n\n"
+                    f"Lembramos que sua consulta está marcada para:\n"
+                    f"Data: {consulta.data}\n"
+                    f"Horário: {consulta.horario}\n"
+                    f"Motivo: {consulta.motivo}\n\n"
+                    f"Posto de Saúde do Bairro."
                 )
 
-                print("Mensagem enviada com sucesso!")
+                try:
 
-            except Exception as erro:
+                    pywhatkit.sendwhatmsg_instantly(
 
-                print("Erro ao enviar mensagem:")
-                print(erro)
+                        consulta.paciente.telefone,
 
-            return
+                        mensagem,
 
-    print("Consulta não encontrada.")
+                        wait_time=30,
+
+                        tab_close=True
+
+                    )
+
+                    print("Mensagem enviada com sucesso!")
+
+                except Exception as erro:
+
+                    print("Erro ao enviar mensagem.")
+
+                    print(erro)
+
+                return
+
+        print("Consulta não encontrada.")
+
+    # ---------------------
+
+    def relatorio(self):
+
+        print("\n===== RELATÓRIO =====")
+
+        print("Pacientes cadastrados:", len(self.__pacientes))
+
+        print("Consultas agendadas:", len(self.__consultas))
 
 
-def relatorio():
+# =====================================
+# PROGRAMA PRINCIPAL
+# =====================================
 
-    print("\n===== RELATÓRIO =====")
-    print("Pacientes cadastrados:", len(pacientes))
-    print("Consultas agendadas:", len(consultas))
-
+sistema = SistemaPosto()
 
 while True:
 
@@ -186,40 +397,60 @@ while True:
     print(" SISTEMA POSTO DE SAÚDE")
     print("================================")
     print("1 - Cadastrar paciente")
-    print("2 - Área do paciente")
+    print("2 - Consultas do paciente")
     print("3 - Listar pacientes")
     print("4 - Agendar consulta")
     print("5 - Listar consultas")
-    print("6 - Enviar lembrete WhatsApp")
-    print("7 - Relatório")
+    print("6 - Confirmar consulta")
+    print("7 - Cancelar consulta")
+    print("8 - Enviar lembrete WhatsApp")
+    print("9 - Relatório")
     print("0 - Sair")
 
     opcao = input("Escolha: ")
 
     if opcao == "1":
-        cadastrar_paciente()
+
+        sistema.cadastrar_paciente()
 
     elif opcao == "2":
-        area_paciente()
+
+        sistema.area_paciente()
 
     elif opcao == "3":
-        listar_pacientes()
+
+        sistema.listar_pacientes()
 
     elif opcao == "4":
-        agendar_consulta()
+
+        sistema.agendar_consulta()
 
     elif opcao == "5":
-        listar_consultas()
+
+        sistema.listar_consultas()
 
     elif opcao == "6":
-        enviar_lembrete()
+
+        sistema.confirmar_consulta()
 
     elif opcao == "7":
-        relatorio()
+
+        sistema.cancelar_consulta()
+
+    elif opcao == "8":
+
+        sistema.enviar_lembrete()
+
+    elif opcao == "9":
+
+        sistema.relatorio()
 
     elif opcao == "0":
+
         print("Sistema encerrado.")
+
         break
 
     else:
+
         print("Opção inválida.")
